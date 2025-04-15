@@ -9,6 +9,10 @@ TODO:
 - klopfen -> spiel muss automatisch nach einer weiteren runde enden
 - strategien ausprobieren?
 
+Strategieideen:
+
+- Punktzahl jetzt sofort maximieren (alle zugmöglichkeiten berechnen, den zug nehmen der die beste punktzahl hat), nicht zukünftig denken
+
 ## Regeln
 
 [Regeln (&nearr; Wikipedia)](https://de.wikipedia.org/wiki/Schwimmen_(Kartenspiel)#Die_Regeln)

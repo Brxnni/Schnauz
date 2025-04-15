@@ -1,19 +1,20 @@
 import random
-from cards import Game, VALID_MOVES, repr_player
+from cards import Game, VALID_MOVES, Move, MoveType
 
-g = Game()
+g = Game(2)
 g.print_full_state()
 
 i = 0
 while True:
 	m = random.choice(VALID_MOVES)
-	player_idx = i % 3
+	player_idx = i % len(g.players)
 	i += 1
 
-	g.make_move(player_idx, m)
-	print(i, m.text_repr(player_idx), "->", g.print_short_state())
-	has_won = g.has_won()
-	if has_won:
-		print(f"{repr_player(has_won)} hat gewonnen!!")
+	if i == 100:
+		m = Move(MoveType.KNOCK)
+	print(i, m.text_repr(player_idx), "->", g.dump_short_state())
+	game_over = g.make_move(m)
+
+	if game_over:
 		g.print_full_state(False)
 		break

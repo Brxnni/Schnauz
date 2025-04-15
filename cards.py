@@ -22,7 +22,7 @@ BASE = "\033[38;2;%sm"
 GOLD = BASE % "240;140;0"
 RED = BASE % "255;15;0"
 BLUE = BASE % "0;150;240"
-GREEN = BASE % "50;230;110" #"\033[92m"
+GREEN = BASE % "50;230;110"
 
 BOLD = "\033[1m"
 END = "\033[0m"
@@ -40,7 +40,7 @@ NUMBER_CHARS = {
 	Number.SEVEN: "7",
 	Number.EIGHT: "8",
 	Number.NINE: "9",
-	Number.TEN: "⏨", # should all be one character long imo
+	Number.TEN: "⏨", # Muss ein Zeichen breit sein
 	Number.JACK: "B",
 	Number.QUEEN: "D",
 	Number.KING: "K",
@@ -66,8 +66,6 @@ class Card:
 		}[self.number]
 	def repr_cards(cards: list[Self]) -> str:
 		return " ".join([ card.__repr__() for card in cards ])
-
-import random
 
 class MoveType(Enum):
 	KNOCK = auto()
@@ -108,12 +106,15 @@ def player_score(player: list[Card]) -> float:
 	scores = [ sum([ card.value() for card in color ]) for color in colors ]
 	return max(scores)
 
+import random
+
 class Game:
 	def __init__(self, player_count: int = 3) -> None:
 		self.cards = [ Card(c, n) for c in Color for n in Number ]
 		self.players = [ self.draw_cards(3) for _ in range(player_count) ]
 		self.deck = self.draw_cards(3)
 		self.knocked = None
+		self.turn = 0 # Spielerindex
 
 	def draw_cards(self, amount: int) -> list[Card]:
 		random.shuffle(self.cards)
@@ -123,7 +124,7 @@ class Game:
 
 	def print_full_state(self, compact: bool=True) -> None:
 		if compact:
-			print(Card.repr_cards(self.deck) + f"{BOLD}   |   {END}" + " ".join([ f"{BOLD}{GREEN}{ascii_uppercase[i]}: {END}" + Card.repr_cards(player) for i, player in enumerate(self.players) ]))
+			print(Card.repr_cards(self.deck) + f"{BOLD}   |   {END}" + " ".join([ f"{repr_player(i, True)}: {END}" + Card.repr_cards(player) for i, player in enumerate(self.players) ]))
 			return
 
 		print(BOLD + GREEN + "             Deck" + END)
@@ -132,23 +133,36 @@ class Game:
 		print(" | ".join([ Card.repr_cards(player) for player in self.players ]))
 		print("    " + "          ".join([ repr_player(i, True) for i in range(len(self.players)) ]) + END)
 
-	def print_short_state(self) -> str:
+	def dump_short_state(self) -> str:
 		return Card.repr_cards(self.deck)
 
-	def make_move(self, player_index: int, move: Move) -> None:
+	def make_move(self, move: Move) -> bool:
+		"""-> bool: gewonnen?"""
+		# Zug machen
 		if move.type == MoveType.SWAP:
-			self.players[player_index][move.idxs[0]], self.deck[move.idxs[1]] = \
-				self.deck[move.idxs[1]], self.players[player_index][move.idxs[0]]
+			self.players[self.turn][move.idxs[0]], self.deck[move.idxs[1]] = \
+				self.deck[move.idxs[1]], self.players[self.turn][move.idxs[0]]
 		elif move.type == MoveType.SWITCH:
-			self.players[player_index], self.deck = \
-				self.deck, self.players[player_index]
+			self.players[self.turn], self.deck = \
+				self.deck, self.players[self.turn]
 		elif move.type == MoveType.KNOCK:
-			self.knocked = player_index
+			self.knocked = self.turn
 
-	def has_won(self) -> Union[False,int]:
-		for idx, player in enumerate(self.players):
-			# Feuer
-			if all([ card.number == Number.ACE for card in player ]): return idx
-			# 31
-			if player_score(player) == 31: return idx
+		# Win conditions für Spieler überprüfen
+		# Feuer (= nur Asse) oder 31
+		if all([ card.number == Number.ACE for card in self.players[self.turn] ]) or \
+		player_score(self.players[self.turn]) == 31:
+			self.over = True
+			print(f"{repr_player(self.turn)} hat gewonnen!")
+			return True
+
+		if self.knocked != None:
+			if self.turn == (self.knocked - 1) % len(self.players):
+				print(f"Nach dem Klopfen war jeder ein Mal dran.")
+				scores = [ (idx, player_score(player)) for idx, player in enumerate(self.players) ]
+				scores.sort(key=lambda p:p[1], reverse=True)
+				print(f"{repr_player(scores[0][0])} gewinnt mit {scores[0][1]} Punkten!")
+				return True
+
+		self.turn = (self.turn + 1) % len(self.players)
 		return False
