@@ -4,9 +4,14 @@
 
 Will rausfinden obs für dieses Spiel irgendwelche Strategien gibt oder ob es wirklich 100% Glück ist
 
+TODO:
+
+- klopfen -> spiel muss automatisch nach einer weiteren runde enden
+- strategien ausprobieren?
+
 ## Regeln
 
-[Regeln (-> Wikipedia)](https://de.wikipedia.org/wiki/Schwimmen_(Kartenspiel))
+[Regeln (&nearr; Wikipedia)](https://de.wikipedia.org/wiki/Schwimmen_(Kartenspiel)#Die_Regeln)
 
 Spezifische Regeln:
 

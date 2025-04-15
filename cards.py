@@ -41,8 +41,8 @@ NUMBER_CHARS = {
 	Number.EIGHT: "8",
 	Number.NINE: "9",
 	Number.TEN: "⏨", # should all be one character long imo
-	Number.JACK: "J",
-	Number.QUEEN: "Q",
+	Number.JACK: "B",
+	Number.QUEEN: "D",
 	Number.KING: "K",
 	Number.ACE: "A"
 }
@@ -84,16 +84,20 @@ class Move:
 		elif self.type == MoveType.SWITCH: return "<FullDeck>"
 		elif self.type == MoveType.SWAP: return f"<Deck[{self.idxs[0]}] <-> Player[{self.idxs[1]}]"
 	def text_repr(self, player_index: int) -> str:
-		out = f"{BOLD}{GREEN}Spieler {ascii_uppercase[player_index]}{END} "
+		out = repr_player(player_index)
 		if self.type == MoveType.SWITCH:
-			return out + "tauscht alle seine Karten!"
+			return out + " tauscht alle seine Karten!"
 		elif self.type == MoveType.SWAP:
 			# return out + f"tauscht die {BOLD}{self.idxs[1]+1}{END}. Karte des Decks mit seiner {BOLD}{self.idxs[0]+1}{END}. Karte!"
-			return out + f"tauscht die seine {BOLD}{self.idxs[0]+1}{END}. Karte mit der {BOLD}{self.idxs[1]+1}{END}. Karte des Decks!"
+			return out + f" tauscht seine {BOLD}{self.idxs[0]+1}{END}. Karte mit der {BOLD}{self.idxs[1]+1}{END}. Karte des Decks!"
 		elif self.type == MoveType.KNOCK:
-			return out + "klopft!"
+			return out + " klopft!"
 
 VALID_MOVES = [ Move(MoveType.SWITCH) ] + [ Move(MoveType.SWAP, [i,j]) for i in range(3) for j in range(3) ]
+
+def repr_player(player_idx: int, short: bool=False) -> str:
+	if short: return f"{BOLD}{GREEN}{ascii_uppercase[player_idx]}{END}"
+	return f"{BOLD}{GREEN}Spieler {ascii_uppercase[player_idx]}{END}"
 
 def player_score(player: list[Card]) -> float:
 	# Drei des gleichen Ranges: Spiel endet nicht sofort, hat aber eigenen Wert
@@ -122,14 +126,14 @@ class Game:
 			print(Card.repr_cards(self.deck) + f"{BOLD}   |   {END}" + " ".join([ f"{BOLD}{GREEN}{ascii_uppercase[i]}: {END}" + Card.repr_cards(player) for i, player in enumerate(self.players) ]))
 			return
 
-		print(BOLD + GREEN + "             DECK" + END)
+		print(BOLD + GREEN + "             Deck" + END)
 		print(f"           {Card.repr_cards(self.deck)}")
 		print(f"\n              {BOLD}↑↓{END}\n")
 		print(" | ".join([ Card.repr_cards(player) for player in self.players ]))
-		print(BOLD + GREEN + "    " + "          ".join([ ascii_uppercase[i] for i in range(len(self.players)) ]) + END)
+		print("    " + "          ".join([ repr_player(i, True) for i in range(len(self.players)) ]) + END)
 
-	def print_state(self) -> None:
-		print(Card.repr_cards(self.deck))
+	def print_short_state(self) -> str:
+		return Card.repr_cards(self.deck)
 
 	def make_move(self, player_index: int, move: Move) -> None:
 		if move.type == MoveType.SWAP:
